@@ -20,7 +20,7 @@ data_1 = [];data_2 = [];data_3 = [];data_4 = [];
 
 while MSE > 0.001
     %mean square error between result and desire value
-    MSE = sqrt(sum((d-q).^2));
+    MSE = sqrt(sum((d-q).^2))
     %disp(MSE);
     
     %visualize recorded data
@@ -33,10 +33,10 @@ while MSE > 0.001
     % iterative updating
     w = (w'+u.*(matrix(d-q)*([q(1),-q(2),-q(3),-q(4)]')))';
     %operation result of updating network
-    q = nt(q,w);
+    q = nt(q_0,w);
     
     %training period calculator
-    period = period+1;
+    period = period+1
 end
 
 plot(data_loss,'linewidth',1.5);
@@ -52,11 +52,13 @@ figure;
 plot3(data_2(2:end),data_3(2:end),data_4(2:end),'linewidth',1.5);
 grid on;
 
+p = nt([2,1,5,7],w)
+p = nt([7,4,3,1],w)
 
 % operation result of neural network
 function p = nt(q_0,w)
     e=exp(1);% bottom of natural logarithm
-    g = @(x)(e^(x)-e^(-x))/e^(-x)+e^x;% activation function applied
+    g = @(x)(e^(x)-e^(-x))/(e^(-x)+e^x);% activation function applied
     f = @(t,x)[w(1)*g(x(1))-w(2)*g(x(2))-w(3)*g(x(3))-w(4)*g(x(4))+1; 
         w(2)*g(x(1))+w(1)*g(x(2))-w(4)*g(x(3))+w(3)*g(x(4))+2;
         w(3)*g(x(1))+w(4)*g(x(2))+w(1)*g(x(3))-w(2)*g(x(4))+3;
