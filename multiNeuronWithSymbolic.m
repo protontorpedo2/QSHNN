@@ -1,5 +1,5 @@
 e = 3;%exp(1);% bottom of natural logarithm
-n=3;%number of neurons
+n=8;%number of neurons
 
 w0 = [0.03,0.01,0.01,0.06];%initial weight values
 w = ones(n^2,4);
@@ -39,8 +39,6 @@ end
 MSE = 1;% mean square error
 period = 0;% training loop times
 data_loss = [];
-% data_1 = [];data_2 = [];data_3 = [];data_4 = [];
-% data_5 = [];data_6 = [];data_7 = [];data_8 = [];
 
 syms x t g h
 x = sym('x',[n*4,1]);
@@ -55,18 +53,9 @@ while MSE > 0.001
     MSE = sqrt(sum((d-q).^2));%mean square error between result and desire value
     disp('MSE:');
     disp(MSE);
- 
-    %     %visualize recorded data
-    %data_loss = [data_loss,MSE];
-    %     data_1 = [data_1;q(1)];
-    %     data_2 = [data_2;q(2)];
-    %     data_3 = [data_3;q(3)];
-    %     data_4 = [data_4;q(4)];
-    %     data_5 = [data_5;q(5)];
-    %     data_6 = [data_6;q(6)];
-    %     data_7 = [data_7;q(7)];
-    %     data_8 = [data_8;q(8)];
- 
+     %visualize recorded data
+    data_loss = [data_loss,MSE];
+
     delta = d-q;%[1,4*n] array, also q and d
     %disp(delta);
     
@@ -83,24 +72,19 @@ while MSE > 0.001
     %disp(W);
 
     h = W*x;
+    vpa(h,5);
     f = char(h);
-    f2 = strcat('@(t,x)',f);%combine two char rings
-
-    f3 = strrep(f2,'x12','x(12)');
-    f3 = strrep(f3,'x11','x(11)');
-    f3 = strrep(f3,'x10','x(10)');
-    f3 = strrep(f3,'x1','x(1)');
-    f3 = strrep(f3,'x2','x(2)');
-    f3 = strrep(f3,'x3','x(3)');
-    f3 = strrep(f3,'x4','x(4)');
-    f3 = strrep(f3,'x5','x(5)');
-    f3 = strrep(f3,'x6','x(6)');
-    f3 = strrep(f3,'x7','x(7)');
-    f3 = strrep(f3,'x8','x(8)');
-    f3 = strrep(f3,'x9','x(9)');
+    f3 = strcat('@(t,x)',f);%combine two char rings
     
+    for i = 4*n:-1:1
+        num = num2str(i);
+        str = strcat('x',num);
+        str2 = strcat('x(',num,')');
+        f3 = strrep(f3,str,str2);
+        %f3 = strrep(f3,'x12','x(12)');
+    end
+    %disp(f3);
     f3 = str2func(f3);
-
     q = networkOperate(q_0,f3);%new result of updated network
     period = period+1;%training period calculator
     disp('period:');
@@ -109,22 +93,12 @@ while MSE > 0.001
     % disp(q);
 end
 
-% plot(data_loss,'linewidth',1.5);
-% grid on;
-% %plot(data_2(30:end));
-% figure;
-% plot3(data_4(2:end),data_5(2:end),data_6(2:end),'linewidth',1.5);
-% grid on;
-% figure;
-% plot3(data_6(2:end),data_7(2:end),data_8(2:end),'linewidth',1.5);
-% grid on;
-% figure;
-% plot3(data_5(2:end),data_7(2:end),data_8(2:end),'linewidth',1.5);
-% grid on;
+plot(data_loss,'linewidth',1.5);
+grid on;
 
 % operation result of neural network
 function q = networkOperate(q_0,f3)
-    opts = odeset('RelTol',1e-100,'AbsTol',1e-100,'MaxStep',0.001);
+    opts = odeset('RelTol',1e-13,'AbsTol',1e-100,'MaxStep',0.001);
     [~,y] = ode45(f3,[0,5],q_0,opts);
     q = y(end-1,:);
 end
