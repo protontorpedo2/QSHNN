@@ -1,5 +1,5 @@
 e = 3;%bottom of natural logarithm
-n=2;%number of neurons
+n=4;%number of neurons
 
 q0 = [0,0.2,0.4,0.3];% initial value of neurons
 q_0 = [];
