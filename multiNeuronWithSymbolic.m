@@ -1,13 +1,25 @@
-e = 3;%exp(1);% bottom of natural logarithm
-n=8;%number of neurons
+e = 3;%bottom of natural logarithm
+n=2;%number of neurons
 
-w0 = [0.03,0.01,0.01,0.06];%initial weight values
+q0 = [0,0.2,0.4,0.3];% initial value of neurons
+q_0 = [];
+for i=1:n
+    q_0 = [q_0,q0];
+end 
+
+w0 = [0,0.01,0.01,0.06];%initial weight values
 w = ones(n^2,4);
 for i=1:n^2
-    w(i,:) = w0.*(i/(n^2));%randow initial value generator
+    w(i,:) = w0.*(i/(n^2));%randow value generator
+% for i = 1:n
+%     a = (i-1)*4;
+%     for j = 1:n
+%         b = (j-1)*4;
+%         w(a+1:a+4,b+1) = multiplication(q(a+1:a+4),q(j+1:j+4)); 
+%     end    
 end
 
-W=[];
+W=[];%adjacent matrix
 L = [];
 for i = 1:n
     for j = 1:n
@@ -16,34 +28,30 @@ for i = 1:n
     W = [W;L];
     L = [];
 end
-%display(W);%W is linear forward transmission matrix
 
-q0 = [0.1,0.2,0.4,0.3];% initial value of neurons
-q_0 = [];
-for i=1:n
-    q_0 = [q_0,q0.*(5*n^(1/3))];%randow initial value generator
-end 
-%display(q_0);
-
-u = 0.05;% learning rate constant
+u = 0.05;% learning rate
 q = q_0;
-%disp(q);
 
-d0 = [0.06,0.12,0.34,0.5];
+d0 = [0.5,0.5,0.5,0.5];
 d = [];
 for i=1:n
-    d = [d,d0];%training desire
+    if i == 2
+        d = [d,2*d0];
+    else   
+        d = [d,d0];%training desire
+    end
 end 
-%display(d);
 
 MSE = 1;% mean square error
 period = 0;% training loop times
 data_loss = [];
+data_1 = [];data_2 = [];data_3 = [];data_4 = [];
+data_5 = [];data_6 = [];data_7 = [];data_8 = [];
 
-syms x t g h
+syms  t g h
 x = sym('x',[n*4,1]);
-%g = (e^(t)-e^(-t))/e^(t)+e^t; % hyperbolic activation function
-g = t;%linear activation function
+g = (e^(t)-e^(-t))/(e^(t)+e^t); % hyperbolic activation function
+
 for i = 1:n*4
     x(i) = subs(g,x(i));
 end
@@ -58,6 +66,16 @@ while MSE > 0.001
 
     delta = d-q;%[1,4*n] array, also q and d
     %disp(delta);
+
+    
+    data_1 = [data_1;q(1)]; %#ok<AGROW>
+    data_2 = [data_2;q(2)]; %#ok<AGROW>
+    data_3 = [data_3;q(3)]; %#ok<AGROW>
+    data_4 = [data_4;q(4)];%#ok<AGROW>
+    data_5 = [data_5;q(5)];%#ok<AGROW>
+    data_6 = [data_6;q(6)];%#ok<AGROW>
+    data_7 = [data_7;q(7)];%#ok<AGROW>
+    data_8 = [data_8;q(8)];%#ok<AGROW>
     
     % iterative updating
     for i = 1:n
@@ -65,7 +83,7 @@ while MSE > 0.001
         for j = 1:n
             %update W_ij, neuron_j influence neuron_i through link W_ij.
             b = (j-1)*4;
-            W(a+1:a+4,b+1) = (W(a+1:a+4,b+1)+u.*(matrix(delta(a+1:a+4))*([q(b+1),-q(b+2),-q(b+3),-q(b+4)].'))).';
+            W(a+1:a+4,b+1) = (W(a+1:a+4,b+1)+u.*(matrix(delta(a+1:a+4))*([0,-q(b+2),-q(b+3),-q(b+4)].'))).';
             W(a+1:a+4,b+1:b+4) = matrix(W(a+1:a+4,b+1));
         end
     end
@@ -93,14 +111,23 @@ while MSE > 0.001
     % disp(q);
 end
 
-plot(data_loss,'linewidth',1.5);
+figure;
+plot(data_loss(2:end),'linewidth',1.5);
 grid on;
+figure;
+hold on;
+x = 1:length(data_loss);
+plot(x,data_1(1:end),'r',x,data_2(1:end),'r',x,data_3(1:end),'r',x,data_4(1:end),'r');
+plot(x,data_5(1:end),'b',x,data_6(1:end),'b',x,data_7(1:end),'b',x,data_8(1:end),'b');
+hold off;
+grid on;
+%clear;
 
 % operation result of neural network
 function q = networkOperate(q_0,f3)
-    opts = odeset('RelTol',1e-13,'AbsTol',1e-100,'MaxStep',0.001);
-    [~,y] = ode45(f3,[0,5],q_0,opts);
-    q = y(end-1,:);
+    opts = odeset('RelTol',1e-10,'AbsTol',1e-100,'MaxStep',0.05);
+    [~,y] = ode45(f3,[0,10],q_0,opts);
+    q = y(end,:);
 end
 
 % Matrix representation
@@ -109,4 +136,9 @@ function Q = matrix(q)
            q(2) q(1) -q(4) q(3);
            q(3) q(4) q(1) -q(2);
            q(4) -q(3) q(2) q(1)];
+end
+
+
+function Q = multiplication(p,q)
+    Q = (matrix(p)*q.').';
 end
